@@ -1,0 +1,111 @@
+pipeline {
+    agent any
+    
+    environment {
+        PROJECT_NAME = "Temperature-Converter"
+        VERSION = "1.0.0"
+    }
+    
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/AymenAkhtar/Temperature-Converter.git'
+                echo "🔁 Checked out Temperature Converter application"
+            }
+        }
+        
+        stage('Install Dependencies') {
+            steps {
+                bat 'npm install'
+                echo "📦 Dependencies installed successfully"
+            }
+        }
+        
+        stage('Code Linting') {
+            steps {
+                bat 'npm run lint'
+                echo "🔍 Linting completed"
+            }
+        }
+        
+        stage('Run Tests') {
+            steps {
+                bat 'npm test'
+                echo "🧪 Tests executed successfully"
+            }
+        }
+        
+        stage('Build Application') {
+            steps {
+                bat 'npm run build'
+                echo "🔨 Application built successfully"
+            }
+        }
+        
+        stage('Create Deployment Artifact') {
+            steps {
+                script {
+                    // Create timestamp for artifact
+                    def timestamp = new Date().format('yyyyMMdd-HHmmss')
+                    def artifactName = "temperature-converter-${timestamp}.zip"
+                    
+                    // Create zip artifact
+                    bat "powershell Compress-Archive -Path index.js, package.json, test.js, build.js, dist/* -DestinationPath ${artifactName} -Force"
+                    
+                    // Archive in Jenkins
+                    archiveArtifacts artifacts: "${artifactName}", fingerprint: true
+                    
+                    echo "📦 Artifact created: ${artifactName}"
+                }
+            }
+        }
+        
+        stage('Security Scan') {
+            steps {
+                bat 'npm audit --audit-level moderate || echo \"Security scan completed\"'
+                echo "🔒 Security vulnerability check completed"
+            }
+        }
+    }
+    
+    post {
+        always {
+            echo "=== BUILD SUMMARY ==="
+            echo "Project: ${env.PROJECT_NAME}"
+            echo "Build: #${env.BUILD_NUMBER}"
+            echo "Status: ${currentBuild.currentResult}"
+            echo "Duration: ${currentBuild.durationString}"
+            echo "======================"
+        }
+        
+        success {
+            echo '🎉 Temperature Converter - All stages completed successfully!'
+            
+            // Simulated email notification
+            echo "📧 EMAIL NOTIFICATION:"
+            echo "📧 To: team@example.com"
+            echo "📧 Subject: SUCCESS - Temperature Converter Build #${env.BUILD_NUMBER}"
+            echo "📧 Body: Temperature Converter application built successfully. Artifact ready for deployment."
+            echo "📧 Build URL: ${env.BUILD_URL}"
+            
+            // Build artifact info
+            echo "📦 ARTIFACT: temperature-converter-*.zip created and archived"
+        }
+        
+        failure {
+            echo '❌ Temperature Converter - Build failed!'
+            
+            // Simulated email notification for failure
+            echo "📧 EMAIL NOTIFICATION:"
+            echo "📧 To: team@example.com"
+            echo "📧 Subject: FAILED - Temperature Converter Build #${env.BUILD_NUMBER}"
+            echo "📧 Body: Build failed. Please check Jenkins console immediately."
+            echo "📧 Build URL: ${env.BUILD_URL}"
+        }
+        
+        unstable {
+            echo '⚠️ Temperature Converter - Build unstable!'
+            echo "📧 EMAIL: Build unstable notification sent to team@example.com"
+        }
+    }
+}

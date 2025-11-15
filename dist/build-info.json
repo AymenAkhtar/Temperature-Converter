@@ -1,0 +1,12 @@
+{
+  "project": "Temperature Converter",
+  "version": "1.0.0",
+  "buildDate": "2025-11-15T15:21:37.886Z",
+  "buildNumber": "local",
+  "nodeVersion": "v22.17.0",
+  "filesIncluded": [
+    "index.js",
+    "package.json",
+    "test.js"
+  ]
+}
