@@ -43,22 +43,22 @@ pipeline {
         }
         
         stage('Create Deployment Artifact') {
-            steps {
-                script {
-                    // Create timestamp for artifact
-                    def timestamp = new Date().format('yyyyMMdd-HHmmss')
-                    def artifactName = "temperature-converter-${timestamp}.zip"
-                    
-                    // Create zip artifact
-                    bat "powershell Compress-Archive -Path index.js, package.json, test.js, build.js, dist/* -DestinationPath ${artifactName} -Force"
-                    
-                    // Archive in Jenkins
-                    archiveArtifacts artifacts: "${artifactName}", fingerprint: true
-                    
-                    echo "📦 Artifact created: ${artifactName}"
-                }
-            }
+    steps {
+        script {
+            // Create timestamp for artifact
+            def timestamp = new Date().format('yyyyMMdd-HHmmss')
+            def artifactName = "temperature-converter-${timestamp}.zip"
+            
+            // Create zip artifact - ALL files include karega
+            bat "powershell Compress-Archive -Path * -DestinationPath ${artifactName} -Force"
+            
+            // Archive in Jenkins
+            archiveArtifacts artifacts: "${artifactName}", fingerprint: true
+            
+            echo "📦 Artifact created: ${artifactName}"
         }
+    }
+}
         
         stage('Security Scan') {
             steps {
